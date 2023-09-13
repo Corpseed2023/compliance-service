@@ -13,12 +13,10 @@ public class ResponseEntity<T> {
 
   private Date currentTimeStamp=new Date();
 
-  public ResponseEntity notFound(Class entity) {
-    setMessage(entity.getSimpleName() + " not Found");
-    setStatus(HttpStatus.NOT_FOUND);
-    setStatusCode(HttpStatus.NOT_FOUND.value());
-    return this;
+  public static ResponseEntity notFound() {
+    return null;
   }
+
 
   public ResponseEntity fail(T body, String errMsg) {
     setStatus(HttpStatus.NOT_FOUND);
@@ -42,19 +40,21 @@ public class ResponseEntity<T> {
   }
 
 
-  public ResponseEntity ok() {
-    setMessage("success");
-    setStatus(HttpStatus.OK);
-    setStatusCode(HttpStatus.OK.value());
-    return this;
+  public static ResponseEntity ok() {
+//    setMessage("success");
+//    setStatus(HttpStatus.OK);
+//    setStatusCode(HttpStatus.OK.value());
+//    return this;
+    return null;
   }
 
-  public ResponseEntity ok(T body) {
-    setStatus(HttpStatus.OK);
-    setMessage("Success");
-    setStatusCode(HttpStatus.OK.value());
-    setBody(body);
-    return this;
+  public static ResponseEntity ok(T body) {
+//    setStatus(HttpStatus.OK);
+//    setMessage("Success");
+//    setStatusCode(HttpStatus.OK.value());
+//    setBody(body);
+//    return this;
+    return null;
   }
 
   public ResponseEntity ok(T body, String msg) {
@@ -133,4 +133,6 @@ public class ResponseEntity<T> {
   public void setCurrentTimeStamp(Date currentTimeStamp) {
     this.currentTimeStamp = currentTimeStamp;
   }
+
+
 }

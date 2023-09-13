@@ -8,6 +8,18 @@ import java.util.List;
 
 public interface ComplianceService {
 
+    ResponseEntity fetchAllComplianceByBusinessUnitId(Long businessUnitId);
+
+    ResponseEntity saveBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId);
+
+    ResponseEntity updateBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId);
+
+    ResponseEntity fetchBusinessCompliance(Long complianceId, Long businessUnitId);
+
+
+    ResponseEntity deleteBusinessCompliance(Long complianceId, Long businessUnitId);
+
+
     void saveAllCompliances(List<Compliance> complianceList);
 
     ResponseEntity fetchAllCompliances(Long companyId);
@@ -20,15 +32,7 @@ public interface ComplianceService {
 
     ResponseEntity deleteCompliance(Long complianceId, Long companyId);
 
-    ResponseEntity fetchAllComplianceByBusinessUnitId(Long businessUnitId);
 
-    ResponseEntity saveBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId);
-
-    ResponseEntity updateBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId);
-
-    ResponseEntity fetchBusinessCompliance(Long complianceId, Long businessUnitId);
-
-    ResponseEntity deleteBusinessCompliance(Long complianceId, Long businessUnitId);
 
     ResponseEntity updateComplianceStatus(Long complianceId, int status);
 

@@ -1,168 +1,149 @@
 package com.lawzoom.complianceservice.serviceImpl.complianceServiceImpl;
 
-import com.lawzoom.complianceservice.dao.complianceDao.ComplianceDao;
 import com.lawzoom.complianceservice.dto.complianceDto.ComplianceRequest;
 import com.lawzoom.complianceservice.dto.complianceDto.ComplianceResponse;
 import com.lawzoom.complianceservice.model.complianceModel.Compliance;
+import com.lawzoom.complianceservice.repository.ComplianceRepo;
 import com.lawzoom.complianceservice.response.ResponseEntity;
 import com.lawzoom.complianceservice.service.complianceService.ComplianceService;
 import com.lawzoom.complianceservice.utility.ResponseMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ComplianceServiceImpl implements ComplianceService {
 
     @Autowired
-    private ComplianceDao complianceDao;
-
-    @Autowired
     private ResponseMapper responseMapper;
 
-   @Override
-    public ResponseEntity fetchAllCompliances(Long companyId) {
+    @Autowired
+    private ComplianceRepo complianceRepo;
 
-       List<Compliance> complianceList=this.complianceDao.fetchAllComplianceByCompanyId(companyId);
-        if(complianceList.isEmpty())
-            return new ResponseEntity().noContent();
-
-        return new ResponseEntity().ok(complianceList.stream().map(this::mapToComplianceResponse)
-                .collect(Collectors.toList()));
-    }
 
     private ComplianceResponse mapToComplianceResponse(Compliance compliance) {
         return this.responseMapper.mapToComplianceResponse(compliance);
     }
 
     @Override
-    public ResponseEntity saveCompliance(ComplianceRequest complianceRequest, Long companyId) {
+    public ResponseEntity deleteBusinessCompliance(Long complianceId, Long companyId) {
 
-       Compliance saveCompliance=this.complianceDao.saveCompliance(
-               this.responseMapper.mapToSaveCompliance(complianceRequest,companyId,0L));
 
-        if(saveCompliance==null)
-            return new ResponseEntity().internalServerError();
+        if (!complianceRepo.existsById(complianceId)) {
 
-        return new ResponseEntity().ok();
+            return ResponseEntity.notFound();
+        }
+
+        Compliance compliance = complianceRepo.findById(complianceId).orElse(null);
+        if (compliance != null) {
+
+            compliance.setEnable(false);
+            complianceRepo.save(compliance);
+
+            return  ResponseEntity.ok();
+        } else {
+            return ResponseEntity.notFound();
+        }
     }
-
-    @Override
-    public ResponseEntity updateCompliance(ComplianceRequest complianceRequest, Long companyId) {
-
-       Compliance updateCompliance=this.complianceDao.updateCompliance(
-               this.responseMapper.mapToUpdateCompliance(complianceRequest,companyId,0L));
-
-        if(updateCompliance==null)
-            return new ResponseEntity().internalServerError();
-
-        return new ResponseEntity().ok();
-    }
-
-    @Override
-    public ResponseEntity fetchCompliance(Long complianceId, Long companyId) {
-
-       Compliance compliance=this.complianceDao.findComplianceByCompanyAndId(companyId,complianceId);
-        if(compliance==null)
-            return new ResponseEntity().badRequest("Compliance Not Found !!");
-
-        return new ResponseEntity().ok(mapToComplianceResponse(compliance));
-    }
-
-    @Override
-    public ResponseEntity deleteCompliance(Long complianceId, Long companyId) {
-
-       Compliance compliance=this.complianceDao.findComplianceByCompanyAndId(companyId,complianceId);
-        if(compliance==null)
-            return new ResponseEntity().badRequest("Compliance Not Found !!");
-
-        boolean deleteCompliance=this.complianceDao.deleteCompliance(compliance);
-
-        if(!deleteCompliance)
-            return new ResponseEntity().internalServerError();
-
-        return new ResponseEntity().ok();
-    }
-
-
 
     @Override
     public ResponseEntity fetchAllComplianceByBusinessUnitId(Long businessUnitId) {
-        List<Compliance> complianceList = this.complianceDao.findCompliancesByBusinessUnitId(businessUnitId);
-        return new ResponseEntity().ok(complianceList.stream().map(this::mapToComplianceResponse)
-        .collect(Collectors.toList()));
+       List<Compliance> complianceList =this.complianceRepo.findAllByBusinessUnitId(businessUnitId);
+        return null;
     }
 
-    @Override
     public ResponseEntity saveBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId) {
+        Compliance compliance = new Compliance();
+        compliance.setTitle(complianceRequest.getTitle());
+        compliance.setDescription(complianceRequest.getDescription());
+        compliance.setApprovalState(complianceRequest.getApprovalState());
+        compliance.setApplicableZone(complianceRequest.getApplicableZone());
+        compliance.setStartDate(complianceRequest.getStartDate());
+        compliance.setDueDate(complianceRequest.getDueDate());
+        compliance.setCompletedDate(complianceRequest.getCompletedDate());
+        compliance.setDuration(complianceRequest.getDuration());
+        compliance.setWorkStatus(complianceRequest.getWorkStatus());
+        compliance.setPriority(complianceRequest.getPriority());
+        compliance.setCompanyId(complianceRequest.getCompanyId());
+        compliance.setBusinessUnitId(businessUnitId);
 
-       Compliance saveCompliance=this.complianceDao.saveCompliance(
-               this.responseMapper.mapToSaveCompliance(complianceRequest,0L,businessUnitId));
+        Compliance savedCompliance = complianceRepo.save(compliance);
 
-        if(saveCompliance==null)
-            return new ResponseEntity().internalServerError();
-
-        return new ResponseEntity().ok();
+        return ResponseEntity.ok(savedCompliance);
     }
-
     @Override
     public ResponseEntity updateBusinessCompliance(ComplianceRequest complianceRequest, Long businessUnitId) {
+        Compliance existingCompliance = complianceRepo.findById(complianceRequest.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Compliance not found with ID: " + complianceRequest.getId()));
 
-       Compliance updateCompliance=this.complianceDao.updateCompliance(
-               this.responseMapper.mapToUpdateCompliance(complianceRequest,0L,businessUnitId));
+        existingCompliance.setTitle(complianceRequest.getTitle());
+        existingCompliance.setDescription(complianceRequest.getDescription());
+        existingCompliance.setApprovalState(complianceRequest.getApprovalState());
+        existingCompliance.setApplicableZone(complianceRequest.getApplicableZone());
+        existingCompliance.setStartDate(complianceRequest.getStartDate());
+        existingCompliance.setDueDate(complianceRequest.getDueDate());
+        existingCompliance.setCompletedDate(complianceRequest.getCompletedDate());
+        existingCompliance.setDuration(complianceRequest.getDuration());
+        existingCompliance.setWorkStatus(complianceRequest.getWorkStatus());
+        existingCompliance.setPriority(complianceRequest.getPriority());
+        existingCompliance.setCompanyId(complianceRequest.getCompanyId());
 
-        if(updateCompliance==null)
-            return new ResponseEntity().internalServerError();
+        existingCompliance.setBusinessUnitId(businessUnitId);
 
-        return new ResponseEntity().ok();
+        Compliance updatedCompliance = complianceRepo.save(existingCompliance);
+
+        return ResponseEntity.ok(updatedCompliance);
     }
 
     @Override
     public ResponseEntity fetchBusinessCompliance(Long complianceId, Long businessUnitId) {
+        Compliance compliance = complianceRepo.findByIdAndBusinessUnitId(complianceId, businessUnitId);
 
-       Compliance compliance=this.complianceDao.findComplianceByBusinessUnitAndId(businessUnitId,complianceId);
-        if(compliance==null)
-            return new ResponseEntity().badRequest("Compliance Not Found !!");
-
-        return new ResponseEntity().ok(mapToComplianceResponse(compliance));
-    }
-
-    @Override
-    public ResponseEntity deleteBusinessCompliance(Long complianceId, Long businessUnitId) {
-
-       Compliance compliance=this.complianceDao.findComplianceByBusinessUnitAndId(businessUnitId,complianceId);
-        if(compliance==null)
-            return new ResponseEntity().badRequest("Compliance Not Found !!");
-
-        boolean deleteCompliance=this.complianceDao.deleteCompliance(compliance);
-
-        if(!deleteCompliance)
-            return new ResponseEntity().internalServerError();
-
-        return new ResponseEntity().ok();
-    }
-
-    @Override
-    public ResponseEntity updateComplianceStatus(Long complianceId, int status) {
-        Compliance compliance = this.complianceDao.fetchComplianceById(complianceId);
-        if(compliance==null)return new ResponseEntity().badRequest("Something Went-Wrong, Please Try-again later !!");
-
-        compliance.setWorkStatus(status);
-        this.complianceDao.updateCompliance(compliance);
-
-        return new ResponseEntity().ok("Successfully updated !!");
-    }
-
-    @Override
-    public ResponseEntity fetchManageCompliancesByUserId(Long userId) {
-        return new ResponseEntity().ok(this.complianceDao.fetchManageCompliancesByUserId(userId));
+        if (compliance != null) {
+            return ResponseEntity.ok(compliance);
+        }
+        return ResponseEntity.notFound();
     }
 
     @Override
     public void saveAllCompliances(List<Compliance> complianceList) {
-        this.complianceDao.saveAllCompliances(complianceList);
+
     }
 
+    @Override
+    public ResponseEntity fetchAllCompliances(Long companyId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity saveCompliance(ComplianceRequest complianceRequest, Long companyId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity updateCompliance(ComplianceRequest complianceRequest, Long companyId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity fetchCompliance(Long complianceId, Long companyId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity deleteCompliance(Long complianceId, Long companyId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity updateComplianceStatus(Long complianceId, int status) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity fetchManageCompliancesByUserId(Long userId) {
+        return null;
+    }
 }
