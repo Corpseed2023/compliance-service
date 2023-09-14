@@ -1,0 +1,54 @@
+azure_path: https://corpseeds.blob.core.windows.net/corpseed/
+blob:
+    connection-string: DefaultEndpointsProtocol=https;AccountName=corpseeds;AccountKey=A+mKGi2AQc+Jl+O7x6pQ7OZb5Fu1kTPq/ooXRTTVX+Opzk9xOMiLGVx/h0mOLwJxnYsYDHyhD8mY9slX5/rcHQ==;EndpointSuffix=core.windows.net;
+    container-name: corpseed
+company_service:
+    port: http://localhost:8181/
+db:
+    driver: com.mysql.cj.jdbc.Driver
+    password: root
+    url: jdbc:mysql://127.0.0.1/lawzoom
+    username: root
+
+hibernate:
+    dialect: org.hibernate.dialect.MySQL8Dialect
+    hbm2ddl:
+        auto: update
+    show_sql: true
+
+entitymanager:
+    packagesToScan: com.lawzoom.complianceservice.model
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: info
+    info:
+        env:
+            enabled: true
+server:
+    port: 8081
+spring:
+    application:
+        name: COMPLIANCE-SERVICE
+
+    servlet:
+        multipart:
+            enabled: true
+            file-size-threshold: 2KB
+            max-file-size: 100MB
+            max-request-size: 95MB
+    mvc:
+        pathmatch:
+            matching-strategy: ant_path_matcher
+
+eureka:
+    instance:
+        instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+        prefer-ip-address: true
+    client:
+        fetch-registry: true
+        register-with-eureka: true
+        service-url:
+            defaultZone: http://localhost:8761/eureka

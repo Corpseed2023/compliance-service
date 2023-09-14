@@ -1,6 +1,7 @@
 package com.lawzoom.complianceservice.controller.complianceController;
 
 import com.lawzoom.complianceservice.dto.complianceDto.ComplianceRequest;
+import com.lawzoom.complianceservice.dto.complianceDto.ComplianceResponse;
 import com.lawzoom.complianceservice.response.ResponseEntity;
 import com.lawzoom.complianceservice.service.complianceService.ComplianceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class BusinessUnitComplianceController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity saveCompliance(@Valid @RequestBody ComplianceRequest complianceRequest,@PathVariable("businessUnitId") Long businessUnitId){
+    public ComplianceResponse saveCompliance(@Valid @RequestBody ComplianceRequest complianceRequest, @PathVariable("businessUnitId") Long businessUnitId){
         return this.complianceService.saveBusinessCompliance(complianceRequest,businessUnitId);
     }
 

@@ -17,11 +17,11 @@ import java.util.stream.Collectors;
 @Service
 public class ComplianceTaskServiceImpl implements ComplianceTaskService {
 
-    @Autowired
-    private ComplianceTaskDao complianceTaskDao;
+//    @Autowired
+//    private ComplianceTaskDao complianceTaskDao;
 
-    @Autowired
-    private ComplianceDao complianceDao;
+//    @Autowired
+//    private ComplianceDao complianceDao;
 
     @Autowired
     private ResponseMapper responseMapper;
