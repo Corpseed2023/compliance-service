@@ -1,10 +1,10 @@
 package com.lawzoom.complianceservice.controller.complianceController;
 
 import com.lawzoom.complianceservice.dto.complianceDto.ComplianceRequest;
+import com.lawzoom.complianceservice.dto.complianceDto.ComplianceResponse;
 import com.lawzoom.complianceservice.response.ResponseEntity;
 import com.lawzoom.complianceservice.service.complianceService.ComplianceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -22,7 +22,7 @@ public class CompanyComplianceController {
 	}
 	
 	@PostMapping("/save")
-	public ResponseEntity saveCompliance(@Valid @RequestBody ComplianceRequest complianceRequest,@PathVariable("companyId") Long companyId){
+	public ComplianceResponse saveCompliance(@Valid @RequestBody ComplianceRequest complianceRequest, @PathVariable("companyId") Long companyId){
 		return this.complianceService.saveCompliance(complianceRequest,companyId);
 	}
 	
@@ -40,5 +40,5 @@ public class CompanyComplianceController {
 	public ResponseEntity deleteCompliance(@PathVariable("complianceId") Long complianceId,@PathVariable("companyId") Long companyId){
 		return this.complianceService.deleteCompliance(complianceId,companyId);
 	}
-
+//==========================================complete till delete on 14 sept 2023==================================================
 }
