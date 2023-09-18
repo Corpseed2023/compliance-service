@@ -27,4 +27,6 @@ public interface ComplianceRepo extends JpaRepository<Compliance ,Long>
     Optional<Compliance> findByIdAndCompanyId(Long complianceId, Long companyId);
 
     List<Compliance> findByUserId(Long userId);
+
+    Compliance findComplianceById(Long complianceId);
 }
