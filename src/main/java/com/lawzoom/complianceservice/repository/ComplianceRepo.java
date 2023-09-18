@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ComplianceRepo extends JpaRepository<Compliance ,Long>
@@ -20,4 +21,12 @@ public interface ComplianceRepo extends JpaRepository<Compliance ,Long>
     Compliance updateCompliance(ComplianceRequest complianceRequest, long l, Long businessUnitId);
 
     Compliance findByIdAndBusinessUnitId(Long complianceId, Long businessUnitId);
+
+    List<Compliance> findByCompanyId(Long companyId);
+
+    Optional<Compliance> findByIdAndCompanyId(Long complianceId, Long companyId);
+
+    List<Compliance> findByUserId(Long userId);
+
+    Compliance findComplianceById(Long complianceId);
 }

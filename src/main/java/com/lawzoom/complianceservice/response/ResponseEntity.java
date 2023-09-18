@@ -1,12 +1,17 @@
 package com.lawzoom.complianceservice.response;
 
+import ch.qos.logback.core.joran.action.Action;
+import com.lawzoom.complianceservice.dto.complianceDto.ComplianceResponse;
 import org.springframework.http.HttpStatus;
+
+import org.springframework.http.HttpStatus;
+
 
 import java.util.Date;
 
 public class ResponseEntity<T> {
 
-  private HttpStatus status;
+  private static HttpStatus status;
   private int statusCode;
   private String message;
   private T body;
@@ -17,8 +22,29 @@ public class ResponseEntity<T> {
     return null;
   }
 
+  public static Action status(HttpStatus httpStatus) {
+    return null;
+  }
 
-  public ResponseEntity fail(T body, String errMsg) {
+  public static ResponseEntity creationComplete(String complianceSuccessfullyCreate, HttpStatus httpStatus) {
+    return null;
+  }
+
+  public static ResponseEntity failedStatus(String failedToCreateCompliance, HttpStatus httpStatus) {
+    return null;
+  }
+
+  public static ResponseEntity<ComplianceResponse> updatedStatus(String s) {
+
+    return null;
+  }
+
+    public static ResponseEntity<ComplianceResponse> fetchDataStatus(String s) {
+      return null;
+    }
+
+
+    public ResponseEntity fail(T body, String errMsg) {
     setStatus(HttpStatus.NOT_FOUND);
     setStatusCode(HttpStatus.NOT_FOUND.value());
     setMessage(errMsg);
@@ -48,12 +74,8 @@ public class ResponseEntity<T> {
     return null;
   }
 
-  public static ResponseEntity ok(T body) {
-//    setStatus(HttpStatus.OK);
-//    setMessage("Success");
-//    setStatusCode(HttpStatus.OK.value());
-//    setBody(body);
-//    return this;
+  public ResponseEntity ok(T body) {
+
     return null;
   }
 
@@ -135,4 +157,7 @@ public class ResponseEntity<T> {
   }
 
 
+    public ResponseEntity<ComplianceResponse> build() {
+      return null;
+    }
 }
