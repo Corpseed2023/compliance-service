@@ -1,14 +1,17 @@
 package com.lawzoom.complianceservice.serviceImpl.documentServiceImpl;
 
-import com.lawzoom.complianceservice.dao.complianceDao.ComplianceDao;
-import com.lawzoom.complianceservice.dao.complianceSubTaskDao.ComplianceSubTaskDao;
-import com.lawzoom.complianceservice.dao.complianceTaskDao.ComplianceTaskDao;
-import com.lawzoom.complianceservice.dao.documentDao.DocumentDao;
+//import com.lawzoom.complianceservice.dao.complianceDao.ComplianceDao;
+//import com.lawzoom.complianceservice.dao.complianceSubTaskDao.ComplianceSubTaskDao;
+//import com.lawzoom.complianceservice.dao.complianceTaskDao.ComplianceTaskDao;
+//import com.lawzoom.complianceservice.dao.documentDao.DocumentDao;
 import com.lawzoom.complianceservice.dto.documentDto.DocumentRequest;
 import com.lawzoom.complianceservice.model.complianceModel.Compliance;
 import com.lawzoom.complianceservice.model.complianceSubTaskModel.ComplianceSubTask;
 import com.lawzoom.complianceservice.model.complianceTaskModel.ComplianceTask;
 import com.lawzoom.complianceservice.model.documentModel.Document;
+import com.lawzoom.complianceservice.repository.ComplianceRepo;
+import com.lawzoom.complianceservice.repository.ComplianceSubTaskRepository;
+import com.lawzoom.complianceservice.repository.ComplianceTaskRepository;
 import com.lawzoom.complianceservice.response.ResponseEntity;
 import com.lawzoom.complianceservice.service.azureBlobAdapterService.AzureBlobAdapterService;
 import com.lawzoom.complianceservice.service.documentService.DocumentService;
@@ -24,17 +27,24 @@ import java.util.Optional;
 @Service
 public class DocumentServiceImpl implements DocumentService {
 
-    @Autowired
-    private DocumentDao documentDao;
+//    @Autowired
+//    private DocumentDao documentDao;
+//
+//    @Autowired
+//    private ComplianceDao complianceDao;
+//
+//    @Autowired
+//    private ComplianceTaskDao complianceTaskDao;
+//
+//    @Autowired
+//    private ComplianceSubTaskDao complianceSubTaskDao;
 
-    @Autowired
-    private ComplianceDao complianceDao;
+    private ComplianceTaskRepository complianceTaskRepository;
 
-    @Autowired
-    private ComplianceTaskDao complianceTaskDao;
+    private ComplianceSubTaskRepository complianceSubTaskRepository;
 
-    @Autowired
-    private ComplianceSubTaskDao complianceSubTaskDao;
+    private ComplianceRepo complianceRepository;
+
 
     @Autowired
     private ResponseMapper responseMapper;
@@ -44,7 +54,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity fetchAllComplianceDocument(Long complianceId) {
-        Compliance compliance = this.complianceDao.findComplianceById(complianceId);
+        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
@@ -57,7 +67,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity saveComplianceDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long complianceId) {
-        Compliance compliance = this.complianceDao.findComplianceById(complianceId);
+        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
@@ -80,7 +90,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity updateComplianceDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long complianceId) {
-        Compliance compliance = this.complianceDao.findComplianceById(complianceId);
+        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
@@ -110,7 +120,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity fetchComplianceDocument(Long id, Long complianceId) {
-        Compliance compliance = this.complianceDao.findComplianceById(complianceId);
+        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
@@ -123,7 +133,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity deleteComplianceDocument(Long id, Long complianceId) {
-        Compliance compliance = this.complianceDao.findComplianceById(complianceId);
+        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
