@@ -18,12 +18,15 @@ import java.util.List;
 @Service
 public class ComplianceSubTaskServiceImpl implements ComplianceSubTaskService {
 
+<<<<<<< HEAD
 //    @Autowired
 //    private ComplianceSubTaskDao complianceSubtaskDao;
 //
 //    @Autowired
 //    private ComplianceTaskDao complianceTaskDao;
 
+=======
+>>>>>>> e2f9bde6e79c463bf4df4ef58e396f001192b9e9
     @Autowired
     private ResponseMapper responseMapper;
 
