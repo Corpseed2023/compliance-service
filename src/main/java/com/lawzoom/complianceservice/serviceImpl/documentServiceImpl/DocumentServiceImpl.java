@@ -1,9 +1,6 @@
 package com.lawzoom.complianceservice.serviceImpl.documentServiceImpl;
 
-//import com.lawzoom.complianceservice.dao.complianceDao.ComplianceDao;
-//import com.lawzoom.complianceservice.dao.complianceSubTaskDao.ComplianceSubTaskDao;
-//import com.lawzoom.complianceservice.dao.complianceTaskDao.ComplianceTaskDao;
-//import com.lawzoom.complianceservice.dao.documentDao.DocumentDao;
+
 import com.lawzoom.complianceservice.dto.documentDto.DocumentRequest;
 import com.lawzoom.complianceservice.model.complianceModel.Compliance;
 import com.lawzoom.complianceservice.model.complianceSubTaskModel.ComplianceSubTask;
@@ -12,6 +9,7 @@ import com.lawzoom.complianceservice.model.documentModel.Document;
 import com.lawzoom.complianceservice.repository.ComplianceRepo;
 import com.lawzoom.complianceservice.repository.ComplianceSubTaskRepository;
 import com.lawzoom.complianceservice.repository.ComplianceTaskRepository;
+import com.lawzoom.complianceservice.repository.DocumentRepository;
 import com.lawzoom.complianceservice.response.ResponseEntity;
 import com.lawzoom.complianceservice.service.azureBlobAdapterService.AzureBlobAdapterService;
 import com.lawzoom.complianceservice.service.documentService.DocumentService;
@@ -27,23 +25,14 @@ import java.util.Optional;
 @Service
 public class DocumentServiceImpl implements DocumentService {
 
-//    @Autowired
-//    private DocumentDao documentDao;
-//
-//    @Autowired
-//    private ComplianceDao complianceDao;
-//
-//    @Autowired
-//    private ComplianceTaskDao complianceTaskDao;
-//
-//    @Autowired
-//    private ComplianceSubTaskDao complianceSubTaskDao;
 
     private ComplianceTaskRepository complianceTaskRepository;
 
     private ComplianceSubTaskRepository complianceSubTaskRepository;
 
     private ComplianceRepo complianceRepository;
+
+    private DocumentRepository documentRepository;
 
 
     @Autowired
@@ -53,18 +42,18 @@ public class DocumentServiceImpl implements DocumentService {
     private AzureBlobAdapterService azureBlobAdapterService;
 
     @Override
+    @Override
     public ResponseEntity fetchAllComplianceDocument(Long complianceId) {
         Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
-            return new ResponseEntity().badRequest("Compliance Not Found !!");
+            new ResponseEntity().badRequest("Compliance Not Found !!");
 
-        List<Document> documentList = this.documentDao.findAllDocumentsByCompliance(compliance);
+        List<Document> documentList = this.documentRepository.findAllDocumentsByCompliance(compliance);
         if (documentList.isEmpty())
-            return new ResponseEntity().noContent();
+            return ResponseEntity.noContent().build();
 
-        return new ResponseEntity().ok(documentList.stream().map(d -> this.responseMapper.mapToDocumentResponse(d)));
+        return new ResponseEntity.ok(documentList.stream().map(d -> this.responseMapper.mapToDocumentResponse(d)));
     }
-
     @Override
     public ResponseEntity saveComplianceDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long complianceId) {
         Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
@@ -81,7 +70,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         document.setCompliance(compliance);
-        Document saveDocument = this.documentDao.saveDocument(document);
+        Document saveDocument = this.documentRepository.save(document);
         if (saveDocument == null)
             return new ResponseEntity().internalServerError();
 
@@ -105,13 +94,13 @@ public class DocumentServiceImpl implements DocumentService {
             document.setFileName(fileName);
             document.setUploadDate(CommonUtil.getDate());
         } else {
-            Document findDocument = this.documentDao.findDocumentById(documentRequest.getId());
+            Document findDocument = this.documentRepository.findDocumentById(documentRequest.getId());
             document.setFileName(findDocument.getFileName());
         }
 
 
         document.setCompliance(compliance);
-        Document updateDocument = this.documentDao.updateDocument(document);
+        Document updateDocument = this.documentRepository.save(document);
         if (updateDocument == null)
             return new ResponseEntity().internalServerError();
 
@@ -119,54 +108,77 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
+//    public ResponseEntity fetchComplianceDocument(Long id, Long complianceId) {
+//        Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
+//        if (compliance == null)
+//            return new ResponseEntity().badRequest("Compliance Not Found !!");
+//
+//        Document document = this.documentRepository.findDocumentByComplianceAndId(compliance, id);
+//        if (document == null)
+//            return new ResponseEntity().badRequest("Document Not Found !!");
+//
+//        return new ResponseEntity().ok(this.responseMapper.mapToDocumentResponse(document));
+//    }
+
+
     public ResponseEntity fetchComplianceDocument(Long id, Long complianceId) {
         Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
-        Document document = this.documentDao.findDocumentByComplianceAndId(compliance, id);
+        Document document = this.documentRepository.findDocumentByComplianceAndId(compliance, id);
         if (document == null)
             return new ResponseEntity().badRequest("Document Not Found !!");
 
+//        return ResponseEntity.ok(this.responseMapper.mapToDocumentResponse(document));
         return new ResponseEntity().ok(this.responseMapper.mapToDocumentResponse(document));
+
     }
+
 
     @Override
     public ResponseEntity deleteComplianceDocument(Long id, Long complianceId) {
         Compliance compliance = this.complianceRepository.findComplianceById(complianceId);
         if (compliance == null)
+//            return ResponseEntity.badRequest().body("Compliance Not Found !!");
             return new ResponseEntity().badRequest("Compliance Not Found !!");
 
-        Document document = this.documentDao.findDocumentByComplianceAndId(compliance, id);
+        Document document = this.documentRepository.findDocumentByComplianceAndId(compliance, id);
         if (document == null)
+//            return ResponseEntity.badRequest().body("Document Not Found !!");
             return new ResponseEntity().badRequest("Document Not Found !!");
 
-        boolean deleteDocument = this.documentDao.deleteDocument(document);
-        if (!deleteDocument)
-            return new ResponseEntity().internalServerError();
 
-        if (document.getFileName() != null)
-            this.azureBlobAdapterService.deleteFile(document.getFileName());
+        try {
+            this.documentRepository.delete(document);
 
-        return new ResponseEntity().ok();
+            if (document.getFileName() != null)
+                this.azureBlobAdapterService.deleteFile(document.getFileName());
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound();
+        }
     }
+
 
     @Override
     public ResponseEntity fetchAllTaskDocument(Long taskId) {
-        ComplianceTask complianceTask = this.complianceTaskDao.findComplianceTaskById(taskId);
+        ComplianceTask complianceTask = this.complianceTaskRepository.findComplianceTaskById(taskId);
         if (complianceTask == null)
             return new ResponseEntity().badRequest("Compliance Task Not Found !!");
 
-        List<Document> documentList = this.documentDao.findAllDocumentsByComplianceTask(complianceTask);
+        List<Document> documentList = this.documentRepository.findAllDocumentsByComplianceTask(complianceTask);
         if (documentList.isEmpty())
             return new ResponseEntity().noContent();
 
         return new ResponseEntity().ok(documentList.stream().map(d -> this.responseMapper.mapToDocumentResponse(d)));
     }
 
+
     @Override
     public ResponseEntity saveTaskDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long taskId) {
-        ComplianceTask complianceTask = this.complianceTaskDao.findComplianceTaskById(taskId);
+        ComplianceTask complianceTask = this.complianceTaskRepository.findComplianceTaskById(taskId);
         if (complianceTask == null)
             return new ResponseEntity().badRequest("Compliance Task Not Found !!");
 
@@ -179,7 +191,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         document.setComplianceTask(complianceTask);
-        Document saveDocument = this.documentDao.saveDocument(document);
+        Document saveDocument = this.documentRepository.save(document);
         if (saveDocument == null)
             return new ResponseEntity().internalServerError();
 
@@ -188,82 +200,109 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity updateTaskDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long taskId) {
-        ComplianceTask complianceTask = this.complianceTaskDao.findComplianceTaskById(taskId);
+        ComplianceTask complianceTask = complianceTaskRepository.findComplianceTaskById(taskId);
         if (complianceTask == null)
-            return new ResponseEntity().badRequest("Compliance Task Not Found !!");
+//            return new ResponseEntity().badRequest().body("Compliance Task Not Found !!");
+      return new  ResponseEntity().badRequest("Compliance Task Not Found !!");
 
-        Document document = this.responseMapper.mapToUpdateDocument(documentRequest,
-                null,complianceTask,null);
+        Optional<Document> optionalDocument = documentRepository.findById(documentRequest.getId());
+        if (!optionalDocument.isPresent())
+            return new ResponseEntity().badRequest("Document Not Found !!");
+
+        Document alreadyDocument = optionalDocument.get();
+
+        Document updatedDocument = responseMapper.mapToUpdateDocument(documentRequest, alreadyDocument.getCompliance(), complianceTask, null);
 
         if (file.isPresent() && !file.get().isEmpty()) {
-            if (document.getFileName() != null && document.getFileName().length() > 0)
-                this.azureBlobAdapterService.deleteFile(document.getFileName());
+            if (alreadyDocument.getFileName() != null && alreadyDocument.getFileName().length() > 0) {
+                azureBlobAdapterService.deleteFile(alreadyDocument.getFileName());
+            }
 
-            String fileName = this.azureBlobAdapterService.upload(file.get(), CommonUtil.getUniqueCode());
-            document.setFileName(fileName);
-            document.setUploadDate(CommonUtil.getDate());
+            String fileName = azureBlobAdapterService.upload(file.get(), CommonUtil.getUniqueCode());
+            updatedDocument.setFileName(fileName);
+            updatedDocument.setUploadDate(CommonUtil.getDate());
         } else {
-            Document findDocument = this.documentDao.findDocumentById(documentRequest.getId());
-            document.setFileName(findDocument.getFileName());
+            updatedDocument.setFileName(alreadyDocument.getFileName());
         }
 
-        document.setComplianceTask(complianceTask);
-        Document updateDocument = this.documentDao.updateDocument(document);
-        if (updateDocument == null)
-            return new ResponseEntity().internalServerError();
+        updatedDocument.setComplianceTask(complianceTask);
+        Document savedDocument = documentRepository.save(updatedDocument);
 
-        return new ResponseEntity().ok();
+        if (savedDocument == null)
+            return new ResponseEntity().badRequest("Failed to update document.");
+
+        return ResponseEntity.updatedStatus("Document updated successfully.");
     }
 
     @Override
     public ResponseEntity fetchTaskDocument(Long id, Long taskId) {
-        ComplianceTask complianceTask = this.complianceTaskDao.findComplianceTaskById(taskId);
+        ComplianceTask complianceTask = this.complianceTaskRepository.findComplianceTaskById(taskId);
         if (complianceTask == null)
             return new ResponseEntity().badRequest("Compliance Task Not Found !!");
 
-        Document document = this.documentDao.findDocumentByComplianceTaskAndId(complianceTask, id);
+        Document document = this.documentRepository.findDocumentByComplianceTaskAndId(complianceTask, id);
         if (document == null)
             return new ResponseEntity().badRequest("Document Not Found !!");
 
         return new ResponseEntity().ok(this.responseMapper.mapToDocumentResponse(document));
     }
 
-    @Override
-    public ResponseEntity deleteTaskDocument(Long id, Long taskId) {
-        ComplianceTask complianceTask = this.complianceTaskDao.findComplianceTaskById(taskId);
-        if (complianceTask == null)
-            return new ResponseEntity().badRequest("Compliance Task Not Found !!");
+//    @Override
+//    public ResponseEntity deleteTaskDocument(Long id, Long taskId) {
+//        ComplianceTask complianceTask = this.complianceTaskRepository.findComplianceTaskById(taskId);
+//        if (complianceTask == null)
+//            return new ResponseEntity().badRequest("Compliance Task Not Found !!");
+//
+//        Document document = this.documentRepository.findDocumentByComplianceTaskAndId(complianceTask, id);
+//        if (document == null)
+//            return new ResponseEntity().badRequest("Document Not Found !!");
+//
+//        boolean deleteDocument = this.documentRepository.deleteDocument(document);
+//        if (!deleteDocument)
+//            return new ResponseEntity().internalServerError();
+//
+//        if (document.getFileName() != null)
+//            this.azureBlobAdapterService.deleteFile(document.getFileName());
+//
+//        return new ResponseEntity().ok();
 
-        Document document = this.documentDao.findDocumentByComplianceTaskAndId(complianceTask, id);
-        if (document == null)
-            return new ResponseEntity().badRequest("Document Not Found !!");
 
-        boolean deleteDocument = this.documentDao.deleteDocument(document);
-        if (!deleteDocument)
-            return new ResponseEntity().internalServerError();
 
-        if (document.getFileName() != null)
-            this.azureBlobAdapterService.deleteFile(document.getFileName());
+        @Override
+        public ResponseEntity deleteTaskDocument(Long id, Long taskId) {
+            ComplianceTask complianceTask = complianceTaskRepository.findComplianceTaskById(taskId);
+            if (complianceTask == null)
+                return new ResponseEntity().badRequest("Compliance Task Not Found !!");
 
-        return new ResponseEntity().ok();
-    }
+            boolean documentExists = documentRepository.existsByIdAndComplianceTask(id, complianceTask);
+            if (!documentExists)
+                return new ResponseEntity().badRequest("Document Not Found !!");
+
+            documentRepository.deleteDocumentByIdAndComplianceTask(id, complianceTask);
+
+
+            return new ResponseEntity().successfullStatus("Document deleted successfully.");
+        }
+
 
     @Override
     public ResponseEntity fetchAllSubTaskDocument(Long subTaskId) {
-        ComplianceSubTask complianceSubTask = this.complianceSubTaskDao.findComplianceSubTaskById(subTaskId);
+        ComplianceSubTask complianceSubTask = this.complianceSubTaskRepository.findComplianceSubTaskById(subTaskId);
         if (complianceSubTask == null)
             return new ResponseEntity().badRequest("Compliance Sub-Task Not Found !!");
 
-        List<Document> documentList = this.documentDao.findAllDocumentsByComplianceSubTask(complianceSubTask);
+        List<Document> documentList = this.documentRepository.findAllByComplianceSubTask(complianceSubTask);
         if (documentList.isEmpty())
             return new ResponseEntity().noContent();
 
         return new ResponseEntity().ok(documentList.stream().map(d -> this.responseMapper.mapToDocumentResponse(d)));
     }
 
+
+
     @Override
     public ResponseEntity saveSubTaskDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long subTaskId) {
-        ComplianceSubTask complianceSubTask = this.complianceSubTaskDao.findComplianceSubTaskById(subTaskId);
+        ComplianceSubTask complianceSubTask = this.complianceSubTaskRepository.findComplianceSubTaskById(subTaskId);
         if (complianceSubTask == null)
             return new ResponseEntity().badRequest("Compliance Sub-Task Not Found !!");
 
@@ -276,7 +315,7 @@ public class DocumentServiceImpl implements DocumentService {
         }
 
         document.setComplianceSubTask(complianceSubTask);
-        Document saveDocument = this.documentDao.saveDocument(document);
+        Document saveDocument = this.documentRepository.save(document);
         if (saveDocument == null)
             return new ResponseEntity().internalServerError();
 
@@ -285,7 +324,7 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity updateSubTaskDocument(DocumentRequest documentRequest, Optional<MultipartFile> file, Long subTaskId) {
-        ComplianceSubTask complianceSubTask = this.complianceSubTaskDao.findComplianceSubTaskById(subTaskId);
+        ComplianceSubTask complianceSubTask = this.complianceSubTaskRepository.findComplianceSubTaskById(subTaskId);
         if (complianceSubTask == null)
             return new ResponseEntity().badRequest("Compliance Sub-Task Not Found !!");
 
@@ -300,25 +339,32 @@ public class DocumentServiceImpl implements DocumentService {
             document.setFileName(fileName);
             document.setUploadDate(CommonUtil.getDate());
         } else {
-            Document findDocument = this.documentDao.findDocumentById(documentRequest.getId());
-            document.setFileName(findDocument.getFileName());
+            Document findDocument = this.documentRepository.findById(documentRequest.getId()).orElse(null);
+            if (findDocument != null) {
+                document.setFileName(findDocument.getFileName());
+            }
         }
 
         document.setComplianceSubTask(complianceSubTask);
-        Document updateDocument = this.documentDao.updateDocument(document);
+        Document updateDocument = this.documentRepository.save(document);
+
         if (updateDocument == null)
             return new ResponseEntity().internalServerError();
 
         return new ResponseEntity().ok();
     }
 
+
     @Override
     public ResponseEntity fetchSubTaskDocument(Long id, Long subTaskId) {
-        ComplianceSubTask complianceSubTask = this.complianceSubTaskDao.findComplianceSubTaskById(subTaskId);
+        ComplianceSubTask complianceSubTask = this.complianceSubTaskRepository.findComplianceSubTaskById(subTaskId);
         if (complianceSubTask == null)
             return new ResponseEntity().badRequest("Compliance Sub-Task Not Found !!");
 
-        Document document = this.documentDao.findDocumentByComplianceSubTaskAndId(complianceSubTask, id);
+//        Document document = this.documentRepository.findDocumentByComplianceSubTaskAndId(complianceSubTask, id);
+          Document document = this.documentRepository.findDocumentByComplianceSubTaskAndId(complianceSubTask, id);
+
+
         if (document == null)
             return new ResponseEntity().badRequest("Document Not Found !!");
 
@@ -327,21 +373,20 @@ public class DocumentServiceImpl implements DocumentService {
 
     @Override
     public ResponseEntity deleteSubTaskDocument(Long id, Long subTaskId) {
-        ComplianceSubTask complianceSubTask = this.complianceSubTaskDao.findComplianceSubTaskById(subTaskId);
+        ComplianceSubTask complianceSubTask = this.complianceSubTaskRepository.findComplianceSubTaskById(subTaskId);
         if (complianceSubTask == null)
             return new ResponseEntity().badRequest("Compliance Sub-Task Not Found !!");
 
-        Document document = this.documentDao.findDocumentByComplianceSubTaskAndId(complianceSubTask, id);
+        Document document = this.documentRepository.findDocumentByComplianceSubTaskAndId(complianceSubTask, id);
         if (document == null)
             return new ResponseEntity().badRequest("Document Not Found !!");
 
-        boolean deleteDocument = this.documentDao.deleteDocument(document);
-        if (!deleteDocument)
-            return new ResponseEntity().internalServerError();
+        this.documentRepository.delete(document);
 
         if (document.getFileName() != null)
             this.azureBlobAdapterService.deleteFile(document.getFileName());
 
-        return new ResponseEntity().ok();
+        return ResponseEntity.ok().build();
     }
+
 }

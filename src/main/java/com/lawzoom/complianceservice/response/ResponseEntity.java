@@ -160,4 +160,8 @@ public class ResponseEntity<T> {
     public ResponseEntity<ComplianceResponse> build() {
       return null;
     }
+
+    public ResponseEntity successfullStatus(String s) {
+      return null;
+    }
 }
